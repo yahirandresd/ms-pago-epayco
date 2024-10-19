@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago con ePayco</title>
+</head>
+<body>
+    <h1>Realizar Pago</h1>
+    <form id="payForm">
+        <script
+            src="https://checkout.epayco.co/checkout.js"
+            class="epayco-button"
+            data-epayco-key="{{ epayco_public_key }}"
+            data-epayco-amount="50000"
+            data-epayco-name="Compra de ejemplo"
+            data-epayco-description="Descripción de compra"
+            data-epayco-currency="COP"
+            data-epayco-country="CO"
+            data-epayco-test="true"  <!-- Modo prueba -->
+            data-epayco-response="http://localhost:5000/epayco/response"
+            data-epayco-confirmation="http://localhost:5000/epayco/confirmation">
+        </script>
+    </form>
+</body>
+</html>
