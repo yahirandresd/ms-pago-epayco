@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from epaycosdk.epayco import Epayco
+from flask import Flask
 
 load_dotenv()
 
@@ -28,3 +29,10 @@ def create_token(data):
         }
         token = epayco.token.create(card_info)
         return token
+    except Exception as e:
+        return {'error': str(e)}
+
+def create_customer(token, data):
+    customer_info = {
+        'name': data['name'],
+    }
