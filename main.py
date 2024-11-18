@@ -42,6 +42,27 @@ def create_customer(token, data):
     except Exception as e:
         return {'error': str(e)}
 
+
+# Función para enviar el correo de notificación al microservicio de correos
+def send_email(subject, recipient_email, body_html):
+    try:
+        url_notificaciones = "http://localhost:5000/send-email"  # URL del microservicio de correos
+        data = {
+            "subject": subject,
+            "recipient": recipient_email,
+            "body_html": body_html
+        }
+        response = requests.post(url_notificaciones, json=data)
+
+        if response.status_code == 200:
+            print("Correo enviado exitosamente.")
+        else:
+            print(f"Error al enviar el correo: {response.status_code}, {response.text}")
+    except Exception as e:
+        print(f"Error al enviar el correo: {e}")
+
+
+# Tu función de procesar el pago
 def procces_payment(data, customer_id, token_card):
     try:
         payment_info = {
@@ -64,9 +85,24 @@ def procces_payment(data, customer_id, token_card):
             'currency': 'COP'
         }
         response = epayco.charge.create(payment_info)
+
+        if response["status"] is False:
+            return response
+
+        # Si el pago es exitoso, enviar un correo
+        if response['data']['estado'] == 'Aceptada' and response['data']['respuesta'] == 'Aprobada':
+            subject = "Pago Aprobado"
+            body_html = f"""
+            <h1>¡Pago Aprobado!</h1>
+            <p>Estimado(a) {data['name']} {data['last_name']},</p>
+            <p>Su pago con factura <strong>{data['bill']}</strong> ha sido aprobado.</p>
+            """
+            send_email(subject, data['email'], body_html)
+
         return response
     except Exception as e:
         return {'error': str(e)}
+
 
 @app.route('/process-payment', methods=['POST'])
 def handle_process_payment():
