@@ -108,6 +108,13 @@ def procces_payment(data, customer_id, token_card):
 def handle_process_payment():
     data = request.json
 
+    factura_id = data.get('bill')  # Suponiendo que el ID de la factura se recibe en 'bill'
+
+    # Verificar si la factura existe antes de procesar el pago
+    if not verificar_factura_existe(factura_id):
+        return jsonify({"error": "Factura no encontrada"}), 400  # Si no existe, se retorna error
+
+    # Crear el token de tarjeta
     token_response = create_token(data)
     print("Token response", json.dumps(token_response))
 
@@ -116,6 +123,7 @@ def handle_process_payment():
 
     token_card = token_response['id']
 
+    # Crear el cliente
     customer_response = create_customer(token_card, data)
     print("Customer response", json.dumps(customer_response))
 
@@ -124,6 +132,7 @@ def handle_process_payment():
 
     customer_id = customer_response['data']['customerId']
 
+    # Procesar el pago
     payment_response = procces_payment(data, customer_id, token_card)
     print("Payment response", json.dumps(payment_response))
 
@@ -131,6 +140,21 @@ def handle_process_payment():
         return jsonify(payment_response), 500
 
     return jsonify(payment_response), 200
+
+
+
+
+# Función para verificar si la factura existe
+def verificar_factura_existe(factura_id):
+    url = f'http://localhost:3333/facturas/check/{factura_id}'  # Cambia la URL si es necesario
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        print("Factura existe")
+        return True
+    else:
+        print(f"Factura no encontrada: {response.json().get('error')}")
+        return False
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
